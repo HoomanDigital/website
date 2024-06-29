@@ -1,18 +1,15 @@
 ---
 // Import required css files
-import "@/styles/globals.css";
 import "@/styles/fonts.css";
+import "@/styles/globals.css";
 
 // Import required components
-import TailwindIndicator from "@/components/tailwind-indicator.astro";
-import BaseHead from "@/components/base-head.astro";
-import Header from "@/components/header/header.astro";
-import { ViewTransitions } from "astro:transitions";
-import type { CollectionEntry } from "astro:content";
-import PostCard from "@/components/cards/post-card.astro";
 import CTA from "@/components/CTA.astro";
+import PostCard from "@/components/cards/post-card.astro";
 import Footer from "@/components/footer/footer.astro";
+import Header from "@/components/header/header.astro";
 import "@/styles/prism.css";
+import type { CollectionEntry } from "astro:content";
 import BaseLayout from "./base-layout.astro";
 
 type BlogPost = CollectionEntry<"Blog">;

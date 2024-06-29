@@ -2,13 +2,13 @@
 import Header from "@/components/docs/header.astro";
 import MarketingHeader from "@/components/header/header.astro";
 
-import Sidebar from "@/components/docs/sidebar.astro";
 import Footer from "@/components/docs/footer.astro";
+import Sidebar from "@/components/docs/sidebar.astro";
 import { getCollection } from "astro:content";
 
 import { generateDocsNav } from "@/lib/docs/generate-nav/docs-nav.ts";
-import BaseLayout from "./base-layout.astro";
 import "@fontsource-variable/jetbrains-mono";
+import BaseLayout from "./base-layout.astro";
 interface Props {
   title: string;
   description?: string;

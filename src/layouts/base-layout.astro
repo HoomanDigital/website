@@ -4,10 +4,8 @@ import "@/styles/fonts.css";
 
 import TailwindIndicator from "@/components/tailwind-indicator.astro";
 import BaseHead from "@/components/base-head.astro";
-import Header from "@/components/header/header.astro";
-import Footer from "@/components/footer/footer.astro";
 import { ViewTransitions } from "astro:transitions";
-import CTA from "@/components/CTA.astro";
+
 import AsideTailwindClasses from "@/lib/aside/aside-tailwind-classes.astro";
 
 interface Props {
@@ -29,19 +27,7 @@ const isProd = import.meta.env.PROD;
 >
   <head>
     <!-- Google tag (gtag.js) tag1-->
-    <script
-      is:inline
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-GL5HS9J1PR"></script>
-    <script is:inline>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
 
-      gtag("config", "G-GL5HS9J1PR");
-    </script>
     <!-- Google tag (gtag.js) tag2-->
     <script
       is:inline
