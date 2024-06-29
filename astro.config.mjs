@@ -1,4 +1,5 @@
 import mdx from "@astrojs/mdx";
+import partytown from "@astrojs/partytown";
 import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import tailwind from "@astrojs/tailwind";
@@ -6,7 +7,6 @@ import astroExpressiveCode from "astro-expressive-code";
 import { defineConfig } from "astro/config";
 import remark from "remark-directive";
 import { customAsidePlugin } from "./src/lib/aside/customAsidePlugin";
-
 // https://astro.build/config
 export default defineConfig({
   // experimental: {
@@ -32,6 +32,11 @@ export default defineConfig({
     tailwind(),
     sitemap({
       lastmod: new Date("2024-06-27"),
+    }),
+    partytown({
+      config: {
+        forward: ["dataLayer.push"],
+      },
     }),
     react(),
     astroExpressiveCode({
