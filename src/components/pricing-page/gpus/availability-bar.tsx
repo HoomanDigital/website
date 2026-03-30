@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import clsx from "clsx";
 import React from "react";
 
@@ -5,37 +6,47 @@ interface AvailabilityBarProps {
   available: number;
   total: number;
   className?: string;
+  counts?: boolean;
 }
 
 const AvailabilityBar: React.FC<AvailabilityBarProps> = ({
   available,
   total,
   className,
+  counts,
 }) => {
-  const filledDots = Math.round((available / total) * 15);
-  const emptyDots = 15 - filledDots;
+  const percentageFilled = Math.round(((total - available) / total) * 100);
 
   return (
-    <div className={clsx("my-5 flex flex-col gap-2", className)}>
-      <div className="flex items-center justify-between">
-        <span className="text-lg font-bold text-foreground md:text-base">
-          {available} Available
+    <div className={clsx("my-5 flex flex-col gap-1.5", className)}>
+      {counts ? (
+        <div className="flex items-center justify-between">
+          <span className="text-lg font-semibold text-foreground md:text-sm lg:text-base">
+            {available} Available
+          </span>
+          <span className="rounded border px-1.5 py-[1px] text-xs font-medium text-para">
+            Total: {total}
+          </span>
+        </div>
+      ) : (
+        <span className="text-lg font-semibold text-foreground md:text-sm lg:text-base">
+          {percentageFilled}% Utilized
         </span>
-        <span className="text-sm text-para md:text-base">(out of {total})</span>
-      </div>
-      <div className="flex justify-between">
-        {Array.from({ length: filledDots }).map((_, i) => (
+      )}
+      <div className="relative h-[3px] w-full rounded-full border border-[#8F8F8F] bg-[#A8A8A8] dark:border-zinc-700 dark:bg-zinc-500">
+        <div
+          className="absolute -top-[1px] bottom-[-1px] left-[-1px]  bg-background"
+          style={{
+            width: `calc(${percentageFilled}% + 2px)`,
+          }}
+        >
           <div
-            key={i}
-            className="mx-[2px] h-[8px] w-[8px] rounded-full bg-black dark:bg-white"
+            className={cn(
+              "h-full  rounded-l-full border border-primary bg-[#FF8289] dark:border-primary/90 dark:bg-primary/40",
+              percentageFilled === 100 ? "rounded-r-full" : "",
+            )}
           />
-        ))}
-        {Array.from({ length: emptyDots }).map((_, i) => (
-          <div
-            key={i + filledDots}
-            className="mx-[2px] h-[8px] w-[8px] rounded-full bg-[#DADADA] dark:bg-zinc-700"
-          />
-        ))}
+        </div>
       </div>
     </div>
   );

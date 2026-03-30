@@ -1,42 +1,69 @@
 ---
+import FeatureCard from "@/components/cards/FeatureCard.astro";
+import { whyChooseSection } from "@/lib/constants";
+import WhyChooseSwiper from "./WhyChooseSwiper.tsx";
+
 const { infrastructureSection } = Astro.props;
 ---
 
-<section class="container mb-10">
-  <div class="border-b border-paraDark pb-[80px] pt-0 md:pb-[120px] md:pt-10">
-    <h2 class="text-center text-xl font-medium md:text-[28px]">
-      {infrastructureSection.title}
-    </h2>
+<section class="py-12 dark:bg-[#181818] md:py-20">
+  <div class="container-home relative z-[2] flex flex-col gap-12 md:gap-20">
+    <div class="flex flex-col gap-2">
+      <div class="flex flex-col items-center justify-center gap-2">
+        <h2 class="text-center text-[26px] font-medium md:text-[28px]">
+          {infrastructureSection.title}
+        </h2>
+        <p class="mt-1 text-center text-base dark:text-paraDark">
+          {infrastructureSection.description}
+        </p>
+      </div>
+      <div class="mx-auto mt-10 max-w-[1237px]">
+        <div
+          class="grid grid-cols-2 gap-x-3 gap-y-10 md:grid-cols-3 md:gap-x-5 md:gap-y-10 lg:grid-cols-5 2xl:gap-10"
+        >
+          {
+            infrastructureSection.cards.map((card: any) => (
+              <FeatureCard card={card} icon={card?.icon} />
+            ))
+          }
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="flex flex-col items-center justify-center gap-3">
+        <h2
+          class="text-center text-[26px] font-medium leading-tight md:text-[40px]"
+        >
+          {whyChooseSection.title}
+        </h2>
+        <p class="mt-1 text-center text-base dark:text-paraDark">
+          {whyChooseSection.description}
+        </p>
+      </div>
+      <div class="mt-10">
+        <WhyChooseSwiper cards={whyChooseSection.cards} client:load />
 
-    <div class="mt-10 lg:mt-20">
-      <div
-        class="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-6 3xl:gap-6"
-      >
-        {
-          infrastructureSection.cards.map((card: any) => (
-            <div class="flex flex-col items-start ">
-              <div class="flex-shrink-0  rounded-lg border border-paraDark bg-background2 p-3 ">
-                <svg class="h-6 w-6 " fill="currentColor" viewBox="0 0 24 24">
-                  <use
-                    xlink:href={`${card.image.src}#img`}
-                    href={`${card.image.src}#img`}
+        <div
+          class="hidden grid-cols-1 gap-6 sm:grid-cols-2 md:grid lg:grid-cols-3"
+        >
+          {
+            whyChooseSection.cards.map((card: any) => (
+              <div class="flex gap-3  rounded-lg border bg-background p-6 shadow-xl">
+                <div set:html={card.icon} class="size-10" />
+
+                <div class=" flex flex-1 flex-col">
+                  <h3
+                    class="text-xl font-semibold md:text-2xl"
+                    set:html={card.title}
                   />
-                </svg>
+                  <p class="mt-3 flex-grow text-base font-medium leading-[20px] dark:text-paraDark md:mt-4">
+                    {card.description}
+                  </p>
+                </div>
               </div>
-
-              <div class="mt-5   md:mt-6">
-                <h3
-                  class="text-base font-semibold md:h-14 "
-                  set:html={card.title}
-                />
-                <p
-                  set:html={card.description}
-                  class=" mt-2 flex-shrink-0 text-xs  md:mt-4 md:text-sm "
-                />
-              </div>
-            </div>
-          ))
-        }
+            ))
+          }
+        </div>
       </div>
     </div>
   </div>

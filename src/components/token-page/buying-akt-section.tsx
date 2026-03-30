@@ -1,68 +1,61 @@
-import { ArrowUpCircle } from "lucide-react";
+import { buyAktIcons } from "./token-icons";
 
-const BuyingAkt = ({ buyingAKTSection }: any) => {
+interface BuyingAKTSection {
+  title: string;
+  description: string;
+  categories: {
+    title: string;
+    items: {
+      title: string;
+      link: string;
+      icon: string;
+    }[];
+  }[];
+}
+
+const BuyingAkt = ({
+  buyingAKTSection,
+}: {
+  buyingAKTSection: BuyingAKTSection;
+}) => {
   return (
-    <div className="py-[40px] md:pb-[80px] md:pt-[80px]">
+    <div>
       <div>
-        <h2 className="text-2xl font-semibold  md:text-2lg ">
+        <h2 className="text-center text-2xl font-semibold  md:text-2lg ">
           {buyingAKTSection.title}
         </h2>
-        <p className="mt-4 text-base font-normal md:text-lg ">
+        <p className="mt-4 text-center text-base font-normal md:text-lg ">
           {buyingAKTSection.description}
         </p>
       </div>
 
-      <div className="mt-4">
-        {buyingAKTSection.table.map(
-          (
-            table: {
-              row: {
-                title: string;
-                link?: string;
-              }[];
-            },
-            i: number,
-          ) => {
-            const colsArray = table.row;
+      <div className="mt-[40px] space-y-[60px] md:mt-[60px]">
+        {buyingAKTSection.categories.map((category) => (
+          <div key={category.title} className="space-y-8">
+            <div className="flex justify-center">
+              <h3 className="inline-flex items-center justify-center rounded-full border border-defaultBorder bg-[#F5F5F5] px-8 py-2 text-base font-medium text-para dark:bg-background2">
+                {category.title}
+              </h3>
+            </div>
 
-            if (i === 0) {
-              return (
-                <div
-                  key={i}
-                  className="flex w-full justify-between border-b  py-[20px] text-base font-semibold  md:text-lg  lg:text-2xl"
+            <div className="grid  grid-cols-2 gap-4 lg:grid-cols-3">
+              {category.items.map((item) => (
+                <a
+                  key={item.title}
+                  href={item.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex flex-col items-center justify-center gap-3 rounded-2xl border border-defaultBorder bg-background2 px-2 py-6 text-center transition-all duration-200 hover:border-primary hover:bg-background2/80 md:gap-4 md:px-6"
                 >
-                  {colsArray.map((col) => (
-                    <div className="flex w-full justify-start">{col.title}</div>
-                  ))}
-                </div>
-              );
-            } else {
-              return (
-                <div
-                  key={i}
-                  className={`flex w-full justify-between  border-b  py-[16px] `}
-                >
-                  {colsArray.map((col, i) => (
-                    <a
-                      href={col.link ?? "#"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex w-full cursor-pointer items-center justify-start gap-x-2 "
-                    >
-                      {col && (
-                        <ArrowUpCircle className="w-4 rotate-45 group-hover:text-primary" />
-                      )}
-
-                      <p className="text-xs font-medium leading-[15px] text-foreground group-hover:text-primary md:text-base md:leading-[28px] lg:text-xl">
-                        {col.title}
-                      </p>
-                    </a>
-                  ))}
-                </div>
-              );
-            }
-          },
-        )}
+                  <div
+                    className="h-6 text-foreground transition-colors duration-200 group-hover:text-primary"
+                    dangerouslySetInnerHTML={{ __html: buyAktIcons[item.icon] }}
+                  />
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

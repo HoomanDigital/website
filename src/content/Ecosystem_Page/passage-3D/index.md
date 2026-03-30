@@ -10,11 +10,11 @@ tags:
 
 description: Passage 3D is the connected virtual worlds for work & play. <br/> <br/>
 
-twitterLink: "https://twitter.com/passage3d"
-websiteLink: "https://market.passage3d.com/"
+twitterLink: "https://x.com/passageio"
+websiteLink: "https://www.passage.io/"
 
 ctaButton:
   label: View Project
-  link: "https://market.passage3d.com/"
+  link: "https://www.passage.io/"
   enable: true
 ---

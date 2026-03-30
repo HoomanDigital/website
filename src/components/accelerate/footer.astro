@@ -1,5 +1,5 @@
 ---
-import DarkModeToggle from "../dark-mode-toggle.astro";
+import DarkModeToggle from "../dark-mode-toggle";
 import {
   DiscordIcon,
   GithubIcon,
@@ -89,7 +89,7 @@ import {
         <div class="flex items-center gap-6">
           <!-- twitter -->
           <a
-            href="https://twitter.com/akashnet_"
+            href="https://x.com/akashnet"
             target="_blank"
             class="text-para hover:text-primary"
           >
@@ -128,7 +128,7 @@ import {
             <TelegramIcon />
           </a>
         </div>
-        <div class="md:hidden"><DarkModeToggle footer /></div>
+        <div class="md:hidden"><DarkModeToggle footer client:load /></div>
       </div>
     </div>
     <div class="h-px w-full bg-[#3E3E3E]"></div>
@@ -137,8 +137,8 @@ import {
         <p
           class="text-center text-2xs font-medium text-[#7E7E7E] md:border-r md:border-[#7E7E7E] md:pr-2"
         >
-          © Akash Network {new Date().getFullYear()} The Akash Network Authors
-          Documentation Distributed under CC BY 4.0
+          © Akash Network {new Date().getFullYear()} The Akash Network Authors Documentation
+          Distributed under CC BY 4.0
         </p>
         <p class="text-2xs font-medium text-[#7E7E7E]">
           Open-source Apache 2.0 Licensed.
@@ -146,7 +146,7 @@ import {
         <p
           class="border-l border-[#7E7E7E] pl-2 text-2xs font-medium text-[#7E7E7E]"
         >
-          GitHub v0.20.0
+          GitHub v0.38.2
         </p>
         <p
           class="border-l border-[#7E7E7E] pl-2 text-2xs font-medium text-[#7E7E7E]"
@@ -154,7 +154,7 @@ import {
           Privacy
         </p>
       </div>
-      <div class="hidden md:block"><DarkModeToggle footer /></div>
+      <div class="hidden md:block"><DarkModeToggle footer client:load /></div>
     </div>
   </footer>
 </div>

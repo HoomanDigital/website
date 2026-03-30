@@ -1,13 +1,23 @@
 export const deployedOnAkash = [
+  "AkashML",
   "NVIDIA",
   "Venice.ai",
   "Prime Intellect",
   "University of Texas at Austin",
   "Nous Research",
+  "Eliza",
+  "Morpheus",
   "Flock.io",
-  "Akash Chat API",
   "Akash Chat",
   "Auki",
+  "Bagel",
+  "Levangie Laboratories",
+  "yesnoerror",
+  "Vertical AI",
+  "Bless",
+  "Grid",
+  "VPS AI",
+  "Saga",
 ];
 
 export function getPriorityIndex(title: any) {

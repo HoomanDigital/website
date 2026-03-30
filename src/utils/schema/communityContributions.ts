@@ -1,17 +1,17 @@
 import { defineCollection, z } from "astro:content";
 
 const baseSchema = defineCollection({
-  // Type-check frontmatter using a schema
   schema: ({ image }) => {
     return z.object({
-      image: image(),
       title: z.string(),
-      readTime: z.string(),
-      pubDate: z.coerce.date(),
-      tags: z.array(z.string()),
-      author: z.string(),
       description: z.string(),
-      // optional
+      pubDate: z.coerce.date(),
+      draft: z.boolean().optional(),
+      categories: z.array(z.string()),
+      tags: z.array(z.string()),
+      contributors: z.array(z.string()),
+      bannerImage: image().optional(),
+      readTime: z.string().optional(),
       link: z.string().optional(),
     });
   },
@@ -26,7 +26,6 @@ export const communityAkashEduSchema = defineCollection({
       pubDate: z.coerce.date(),
       tags: z.array(z.string()),
       description: z.string(),
-      // optional
       author: z.string().optional(),
       readTime: z.string().optional(),
       link: z.string().optional(),
@@ -45,6 +44,14 @@ export const communityEventSchema = defineCollection({
       location: z.string(),
       description: z.string(),
       tags: z.array(z.string()).optional(),
+      cta: z
+        .array(
+          z.object({
+            text: z.string(),
+            link: z.string(),
+          }),
+        )
+        .optional(),
     });
   },
 });

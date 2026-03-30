@@ -1,7 +1,6 @@
 import { defineCollection, z } from "astro:content";
 
 export const brandResourcesSchema = defineCollection({
-  // Type-check frontmatter using a schema
   schema: ({ image }) => {
     return z.object({
       title: z.string(),
@@ -11,12 +10,14 @@ export const brandResourcesSchema = defineCollection({
           title: z.string(),
           description: z.string(),
           image: image(),
-          button: z.object({
-            label: z.string(),
-            link: z.string(),
-            enable: z.boolean(),
-            icon: z.string(),
-          }),
+          button: z.array(
+            z.object({
+              label: z.string(),
+              link: z.string(),
+              enable: z.boolean(),
+              icon: z.string(),
+            }),
+          ),
         }),
       ),
     });
@@ -24,7 +25,6 @@ export const brandResourcesSchema = defineCollection({
 });
 
 export const brandReleasesInsightsSchema = defineCollection({
-  // Type-check frontmatter using a schema
   schema: ({ image }) => {
     return z.object({
       title: z.string(),
@@ -46,7 +46,6 @@ export const brandReleasesInsightsSchema = defineCollection({
 });
 
 export const pressSchema = defineCollection({
-  // Type-check frontmatter using a schema
   schema: ({ image }) => {
     return z.object({
       image: image(),

@@ -4,6 +4,9 @@ import "@/styles/globals.css";
 import CTA from "@/components/CTA.astro";
 import Footer from "@/components/footer/footer.astro";
 import Header from "@/components/header/header.astro";
+import { getEntry } from "astro:content";
+
+// import { NVIDIAB200SoonForm } from "@/components/pricing-page/gpus/GpusComingSoon";
 import clsx from "clsx";
 import BaseLayout from "./base-layout.astro";
 
@@ -11,38 +14,49 @@ interface Props {
   title: string;
   description?: string;
   image?: string;
-  advert?: {
-    title: string;
-    link: string;
-  };
+  noIndex?: boolean;
+  classname?: string;
+  headerClassName?: string;
+  footerClassName?: string;
+  hideDarkToggle?: boolean;
 }
 
-const { title, description, image, advert } = Astro.props;
+const homepage = await getEntry("Homepage", "index");
+
+const { advert } = homepage.data;
+
+const {
+  title,
+  description,
+  image,
+  noIndex,
+  classname,
+  headerClassName,
+  footerClassName,
+  hideDarkToggle,
+} = Astro.props;
 const pathname = Astro.url.pathname;
 ---
 
-<BaseLayout title={title} description={description} image={image}>
+<BaseLayout
+  title={title}
+  description={description}
+  image={image}
+  noIndex={noIndex}
+  classname={classname}
+>
   {
-    advert && (
+    advert && !pathname.includes("neurips") && (
       <div class="flex items-center justify-center bg-primary px-3 py-2">
-        <a
-          id="advert-to-gpus"
-          href={advert.link}
-          target={
-            advert.link.startsWith("/") || advert.link.startsWith("#")
-              ? "_self"
-              : "_blank"
-          }
-        >
-          <p class="text-center text-sm font-semibold text-white underline">
-            {advert.title}
-          </p>
-        </a>
+        <p
+          class="text-center text-sm font-semibold text-white"
+          set:html={advert?.title}
+        />
       </div>
     )
   }
 
-  <Header />
+  <Header overrideClassName={headerClassName} hideDarkToggle={hideDarkToggle} />
 
   <main>
     <slot />
@@ -50,11 +64,16 @@ const pathname = Astro.url.pathname;
 
   <div
     class={clsx(
-      "mt-20",
-      pathname.includes("akash-accelerate-2024") ? "hidden" : "block",
+      pathname.includes("akash-accelerate-2024") ||
+        pathname.includes("akash-accelerate-2025")
+        ? "hidden"
+        : "block",
     )}
   >
     <CTA />
-    <Footer />
+    <Footer
+      overrideClassName={footerClassName}
+      hideDarkToggle={hideDarkToggle}
+    />
   </div>
 </BaseLayout>

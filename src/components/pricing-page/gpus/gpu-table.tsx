@@ -1,12 +1,6 @@
-import OFilter from "@/components/gpu-table/filter";
-import { Card } from "@/components/ui/card";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
+
+import TryAkashForm from "@/components/ui/try-akash-form";
 import { gpus } from "@/utils/api";
-import { ArrowUpRightIcon } from "@heroicons/react/20/solid";
 import {
   QueryClient,
   QueryClientProvider,
@@ -14,14 +8,12 @@ import {
 } from "@tanstack/react-query";
 import axios from "axios";
 import clsx from "clsx";
-import { Info } from "lucide-react";
 import React from "react";
-import { Skeleton } from "../../ui/skeleton";
-import AvailabilityBar from "./availability-bar";
-import CircularProgressBar from "./circular-progress-bar";
+import { DUMMY_GPU_DATA } from "./dummy-gpu-data";
 import Filter, { defaultFilters, type Filters } from "./filter";
-import Sort from "./sort";
-
+import { GPU_PRIORITY_MODELS } from "./gpu-priority";
+import GpuTableRow from "./gpu-table-row";
+import GpuTableRowSkeleton from "./gpu-table-row-skeleton";
 export interface Gpus {
   availability: { total: number; available: number };
   models: Array<{
@@ -45,9 +37,11 @@ export interface Gpus {
 const GpuTable = ({
   initialData,
   subCom,
+  counts,
 }: {
   initialData?: any;
   subCom?: boolean;
+  counts?: boolean;
 }) => {
   const queryClient = new QueryClient();
 
@@ -58,6 +52,7 @@ const GpuTable = ({
           data: initialData,
         }}
         subCom={subCom}
+        counts={counts}
       />
     </QueryClientProvider>
   );
@@ -68,18 +63,19 @@ export default GpuTable;
 const Table = ({
   initialData,
   subCom,
+  counts,
 }: {
   initialData?: {
     data: any;
   };
   subCom?: boolean;
+  counts?: boolean;
 }) => {
   const fetchInterval = 1000 * 60;
 
   const {
     data: result,
     isLoading,
-    isFetching,
     isInitialLoading,
   } = useQuery<
     {
@@ -88,7 +84,16 @@ const Table = ({
     Error
   >({
     queryKey: ["GPU_TABLE"],
-    queryFn: () => axios.get(gpus),
+    queryFn: async () => {
+      if (
+        typeof window !== "undefined" &&
+        !window.location.origin.includes("akash.network")
+      ) {
+        return Promise.resolve({ data: DUMMY_GPU_DATA });
+      }
+
+      return axios.get(gpus);
+    },
     refetchIntervalInBackground: true,
 
     refetchInterval: fetchInterval,
@@ -100,6 +105,7 @@ const Table = ({
       data={data}
       subCom={subCom}
       isLoading={isLoading || isInitialLoading}
+      counts={counts}
     />
   );
 };
@@ -121,11 +127,79 @@ const formatText = (model: string) => {
   return formattedText;
 };
 export const modifyModel = (model: string) => {
-  return model === "rtxa6000" ? "A6000" : formatText(model);
+  if (model === "rtxa6000") return "A6000";
+  if (model === "pro6000se") return "Pro 6000 SE";
+  if (model === "pro6000we") return "Pro 6000 WE";
+  return formatText(model);
 };
 
 export const price = (price: number) => {
-  return price ? `$${price?.toFixed(2)}` : "--";
+  if (!price) return "--";
+  // Format with comma as decimal separator (European format)
+  const formatted = price.toFixed(2);
+  return `$${formatted}`;
+};
+
+export const normalizeGpuModel = (model: Gpus["models"][number]) => {
+  const modelLower = model?.model?.toLowerCase();
+  const isB200 = modelLower === "b200";
+  const isB300 = modelLower === "b300";
+
+  if (!isB200 && !isB300) return model;
+
+  const hardcodedPrice = isB200 ? 5 : 6; // B200: $5, B300: $6
+
+  return {
+    ...model,
+    price: {
+      ...model.price,
+      min: hardcodedPrice,
+      max: hardcodedPrice,
+      avg: hardcodedPrice,
+      med: hardcodedPrice,
+      weightedAverage: hardcodedPrice,
+    },
+    providerAvailability: {
+      total: model?.providerAvailability?.total ?? 1,
+      available: 1,
+    },
+  };
+};
+
+// Helper function to parse RAM value and convert to GB
+const parseRamToGB = (ram: string): number => {
+  if (!ram) return 0;
+  // Handle formats like "80Gi", "180GB", "48Gi", etc.
+  const match = ram.match(/(\d+(?:\.\d+)?)\s*(Gi|GB|gb|gi)/i);
+  if (!match) return 0;
+  const value = parseFloat(match[1]);
+  const unit = match[2].toLowerCase();
+  // Convert Gi to GB (1 GiB ≈ 1.074 GB, but we'll use 1:1 for simplicity)
+  return unit === "gi" ? value : value;
+};
+
+// Categorize VRAM into groups (matching RunPod.io structure)
+const getVramCategory = (ram: string): string => {
+  const ramGB = parseRamToGB(ram);
+  // >80GB group: greater than 80GB (e.g., B200 180GB, B300 180GB, H200 141GB, H100 NVL 94GB, etc.)
+  if (ramGB > 80) return ">80GB";
+  // 80GB group: exactly 80GB
+  if (ramGB === 80) return "80GB";
+  // 48GB group: exactly 48GB
+  if (ramGB === 48) return "48GB";
+  // 32GB group: exactly 32GB
+  if (ramGB === 32) return "32GB";
+  // 24GB group: exactly 24GB
+  if (ramGB === 24) return "24GB";
+  // 12GB group: 12GB or less
+  if (ramGB <= 12) return "12GB";
+  // For values between categories, assign to the nearest lower category
+  if (ramGB > 48 && ramGB < 80) return "48GB"; // Between 48 and 80, group with 48GB
+  if (ramGB > 32 && ramGB < 48) return "32GB"; // Between 32 and 48, group with 32GB
+  if (ramGB > 24 && ramGB < 32) return "24GB"; // Between 24 and 32, group with 24GB
+  if (ramGB > 12 && ramGB < 24) return "12GB"; // Between 12 and 24, group with 12GB
+  // Fallback (shouldn't happen, but just in case)
+  return "12GB";
 };
 
 export const Tables = ({
@@ -133,528 +207,353 @@ export const Tables = ({
   pathName,
   subCom,
   isLoading,
+  counts,
 }: {
   data?: Gpus;
   pathName?: any;
   subCom?: boolean;
   isLoading?: boolean;
+  counts?: boolean;
 }) => {
   const [filteredData, setFilteredData] = React.useState<Gpus["models"]>([]);
   const [filters, setFilters] = React.useState<Filters>(defaultFilters);
+
+  // Priority models after B300/B200 (imported from gpu-priority.ts)
+  const priorityModels = GPU_PRIORITY_MODELS;
+
+  // Wrapper to always keep B300, B200 at top, then H200, H100, A100
+  const setFilteredDataWithB200First = React.useCallback(
+    (newData: Gpus["models"] | ((prev: Gpus["models"]) => Gpus["models"])) => {
+      setFilteredData((prev) => {
+        const dataToProcess =
+          typeof newData === "function" ? newData(prev) : newData;
+        const b300Models = dataToProcess.filter(
+          (model) => model?.model?.toLowerCase() === "b300",
+        );
+        const b200Models = dataToProcess.filter(
+          (model) => model?.model?.toLowerCase() === "b200",
+        );
+        const priorityGpus = dataToProcess.filter((model) => {
+          const modelLower = model?.model?.toLowerCase();
+          return (
+            priorityModels.includes(modelLower) &&
+            modelLower !== "b200" &&
+            modelLower !== "b300"
+          );
+        });
+        const otherModels = dataToProcess.filter((model) => {
+          const modelLower = model?.model?.toLowerCase();
+          return (
+            modelLower !== "b200" &&
+            modelLower !== "b300" &&
+            !priorityModels.includes(modelLower)
+          );
+        });
+
+        // Sort priority GPUs by their defined order
+        priorityGpus.sort((a, b) => {
+          const aIndex = priorityModels.indexOf(a?.model?.toLowerCase());
+          const bIndex = priorityModels.indexOf(b?.model?.toLowerCase());
+          if (aIndex !== bIndex) return aIndex - bIndex;
+          // For same model, prefer 80Gi RAM
+          if (a?.ram === "80Gi" && b?.ram !== "80Gi") return -1;
+          if (b?.ram === "80Gi" && a?.ram !== "80Gi") return 1;
+          return 0;
+        });
+
+        return [...b300Models, ...b200Models, ...priorityGpus, ...otherModels];
+      });
+    },
+    [priorityModels],
+  );
   const totalGpus =
     filteredData?.length > 0
       ? filteredData?.reduce(
-          (prev, curr) => prev + (curr?.availability?.total ?? 0),
-          0,
-        )
-      : data?.availability?.total || 0;
+        (prev, curr) => prev + (curr?.availability?.total ?? 0),
+        0,
+      )
+      : 0;
 
   const totalAvailableGpus =
     filteredData?.length > 0
       ? filteredData?.reduce(
-          (prev, curr) => prev + (curr?.availability?.available ?? 0),
-          0,
-        )
-      : data?.availability?.available || 0;
+        (prev, curr) => prev + (curr?.availability?.available ?? 0),
+        0,
+      )
+      : 0;
+
+  const normalizedData = React.useMemo(() => {
+    let normalized =
+      filteredData?.map((model) => normalizeGpuModel(model)) ?? [];
+
+    // Ensure B300 and B200 are in the data (add if missing)
+    const hasB300 = normalized.some((m) => m?.model?.toLowerCase() === "b300");
+    const hasB200 = normalized.some((m) => m?.model?.toLowerCase() === "b200");
+
+    if (!hasB300) {
+      normalized.push({
+        vendor: "nvidia",
+        model: "b300",
+        ram: "180GB",
+        interface: "HBM3e",
+        availability: { total: 1, available: 1 },
+        providerAvailability: { total: 1, available: 1 },
+        price: {
+          min: 6,
+          max: 6,
+          avg: 6,
+          med: 6,
+          weightedAverage: 6,
+        },
+      } as Gpus["models"][number]);
+    }
+
+    if (!hasB200) {
+      normalized.push({
+        vendor: "nvidia",
+        model: "b200",
+        ram: "180GB",
+        interface: "HBM3e",
+        availability: { total: 1, available: 1 },
+        providerAvailability: { total: 1, available: 1 },
+        price: {
+          min: 5,
+          max: 5,
+          avg: 5,
+          med: 5,
+          weightedAverage: 5,
+        },
+      } as Gpus["models"][number]);
+    }
+
+    // Normalize all models including newly added ones
+    normalized = normalized.map((model) => normalizeGpuModel(model));
+
+    // Get B300, B200, and H200 models
+    const b300Models = normalized.filter(
+      (model) => model?.model?.toLowerCase() === "b300",
+    );
+    const b200Models = normalized.filter(
+      (model) => model?.model?.toLowerCase() === "b200",
+    );
+    const h200Models = normalized.filter(
+      (model) => model?.model?.toLowerCase() === "h200",
+    );
+
+    // Priority GPUs: H100, A100 (excluding B200, B300, H200)
+    const priorityGpus = normalized.filter((model) => {
+      const modelLower = model?.model?.toLowerCase();
+      return (
+        priorityModels.includes(modelLower) &&
+        modelLower !== "b200" &&
+        modelLower !== "b300" &&
+        modelLower !== "h200"
+      );
+    });
+    const otherModels = normalized.filter((model) => {
+      const modelLower = model?.model?.toLowerCase();
+      return (
+        modelLower !== "b200" &&
+        modelLower !== "b300" &&
+        modelLower !== "h200" &&
+        !priorityModels.includes(modelLower)
+      );
+    });
+
+    // Sort priority GPUs by their defined order
+    priorityGpus.sort((a, b) => {
+      const aIndex = priorityModels.indexOf(a?.model?.toLowerCase());
+      const bIndex = priorityModels.indexOf(b?.model?.toLowerCase());
+      if (aIndex !== bIndex) return aIndex - bIndex;
+      // For same model, prefer 80Gi RAM
+      if (a?.ram === "80Gi" && b?.ram !== "80Gi") return -1;
+      if (b?.ram === "80Gi" && a?.ram !== "80Gi") return 1;
+      return 0;
+    });
+
+    // Combine all models including B300, B200, H200, then group by VRAM
+    const allModels = [...b300Models, ...b200Models, ...h200Models, ...priorityGpus, ...otherModels];
+
+    // Group by VRAM category while maintaining current order within each group
+    const groupedByVram: Record<string, typeof allModels> = {
+      ">80GB": [],
+      "80GB": [],
+      "48GB": [],
+      "32GB": [],
+      "24GB": [],
+      "12GB": [],
+    };
+
+    allModels.forEach((model) => {
+      const category = getVramCategory(model?.ram || "");
+      groupedByVram[category]?.push(model);
+    });
+
+    // Return grouped models
+    return {
+      groupedByVram,
+    };
+  }, [filteredData, priorityModels]);
+
+  const HeaderSection = () => (
+    <div className="flex flex-col gap-2 xl:gap-[18px]">
+      <h1 className="text-[28px] font-semibold leading-tight xl:text-[40px] xl:leading-[48px]">
+        GPU Pricing
+      </h1>
+      <p className="text-base leading-relaxed text-para xl:text-base xl:leading-[24px]">
+        Real-time availability for high-demand compute. Transparent hourly
+        pricing with no hidden fees.
+      </p>
+    </div>
+  );
+
+  const CtaSection = ({ className }: { className?: string }) => (
+    <div className={clsx("flex flex-col gap-4 xl:gap-5", className)}>
+      <h2 className="text-lg font-semibold leading-snug text-foreground xl:leading-[28px]">
+        Looking for Bulk Orders or Custom Configurations?
+      </h2>
+      <TryAkashForm
+        type="customButton"
+        linkText="Get a Custom Quote"
+        className="h-10 w-full rounded-lg bg-[#171717] px-4 py-2 text-sm font-medium text-[#fafafa] transition-all hover:bg-[#171717]/90 dark:bg-white dark:text-black dark:hover:bg-white/90 xl:h-9"
+      />
+    </div>
+  );
+
+  // Unified table component that works for both desktop and mobile
+  const UnifiedTable = () => {
+    const renderRows = () => {
+      if (isLoading) {
+        return new Array(10)
+          .fill(0)
+          .map((_, index) => (
+            <GpuTableRowSkeleton key={index} isB200={index < 2} />
+          ));
+      }
+
+      const vramGroups = [">80GB", "80GB", "48GB", "32GB", "24GB", "12GB"];
+
+      return (
+        <>
+          {/* Render grouped VRAM sections */}
+          {vramGroups.map((groupName, i) => {
+            const groupModels = normalizedData?.groupedByVram?.[groupName] || [];
+            if (groupModels.length === 0) return null;
+
+            return (
+              <React.Fragment key={groupName}>
+                {/* VRAM Group Header */}
+                <div className={
+                  clsx(
+                    "bg-[#F5F5F5] dark:bg-background2 w-fit px-4 py-0.5 md:py-1 font-medium  mb-1 md:!mb-0 rounded-full ",
+                    i === 0 ? "mt-[14px] md:mt-4" : "mt-10"
+                  )
+                }>
+                  <h3 className="text-para text-sm">
+                    {groupName} VRAM
+                  </h3>
+                </div>
+
+                {/* Group Models */}
+                {groupModels.map((rawModel, index) => {
+                  const model = normalizeGpuModel(rawModel);
+                  const modelLower = model?.model?.toLowerCase();
+                  const isB200 = modelLower === "b200";
+                  const isB300 = modelLower === "b300";
+                  const isSpecialModel = isB200 || isB300;
+                  const providerCount =
+                    model?.providerAvailability?.available || 0;
+
+                  return (
+                    <GpuTableRow
+                      key={`${groupName}-${index}`}
+                      model={modifyModel(model?.model) || ""}
+                      ram={model?.ram.replace("Gi", "GB") || ""}
+                      interface={model?.interface || ""}
+                      minPrice={model?.price?.min || 0}
+                      maxPrice={model?.price?.max || 0}
+                      avgPrice={model?.price?.weightedAverage || 0}
+                      providerCount={providerCount}
+                      isB200={isSpecialModel}
+                      id={`${model?.model}-(gpu-rent)`}
+                    />
+                  );
+                })}
+              </React.Fragment>
+            );
+          })}
+        </>
+      );
+    };
+
+    return (
+      <div className="w-full overflow-x-auto">
+        <div className="flex flex-col">
+          {/* Header row - visible on both desktop and mobile */}
+          <div className="flex items-center justify-between border-b border-defaultBorder  pb-3 pt-3 text-sm font-light text-para  xl:pb-2 xl:pt-0 xl:text-xs xl:font-normal xl:text-[#71717A] dark:xl:text-[#A1A1AA]">
+
+            <span className="md:text-foreground text-[15px] md:text-base md:font-medium">GPU Model</span>
+            <span className="text-[15px]">Price (Starting at)</span>
+          </div>
+
+          {/* GPU Rows */}
+          <div className="flex flex-col">{renderRows()}</div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <section
       className={clsx(
-        " mx-auto flex max-w-[1380px] flex-col gap-0 md:gap-10 xl:flex-row ",
+        "mx-auto flex w-full flex-col gap-0 md:gap-4",
         subCom ? "" : "md:container",
       )}
     >
-      <div className={clsx("hidden flex-col gap-10 xl:flex")}>
-        <div className="mt-8 flex w-[274px] items-center  justify-between gap-8 rounded-md border bg-background2 p-5 shadow-sm">
-          <div className="flex flex-col gap-5">
-            <div className="">
-              <h2 className="text-sm font-medium text-linkText">Total GPUs</h2>
-              {isLoading ? (
-                <Skeleton className="h-8 w-20" />
-              ) : (
-                <p className="text-2xl font-bold text-foreground">
-                  {totalGpus}
-                </p>
-              )}
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex w-full items-center gap-1">
-                <div className="h-2 w-3 rounded-[3px] bg-[#FFD9DB]"></div>
-                {isLoading ? (
-                  <Skeleton className="h-[10px] w-10" />
-                ) : (
-                  <p className="text-[10px] font-medium text-foreground">
-                    <span className="font-bold">
-                      {(
-                        ((totalAvailableGpus || 0) / (totalGpus || 1)) *
-                        100
-                      ).toFixed(2)}
-                    </span>
-                    % Available
-                  </p>
-                )}
-              </div>
-              <div className="flex w-full items-center gap-1">
-                <div className="h-2 w-3 rounded-[3px] bg-primary"></div>
-                {isLoading ? (
-                  <Skeleton className="h-[10px] w-10" />
-                ) : (
-                  <p className="text-[10px] font-medium text-foreground">
-                    <span className="font-bold">
-                      {(
-                        100 -
-                        ((totalAvailableGpus || 0) / (totalGpus || 1)) * 100
-                      ).toFixed(2)}
-                    </span>
-                    % Used
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-          <CircularProgressBar
-            diameter={80}
-            strokeWidth={15}
-            progressValue={((totalAvailableGpus || 0) / (totalGpus || 1)) * 100}
-            gapSize={1.5}
-          />
+      {/* Desktop Layout */}
+      <div className="hidden flex-row gap-16 xl:flex">
+        <div className="flex w-[289px] flex-shrink-0 flex-col gap-6">
+          <HeaderSection />
+          <CtaSection />
         </div>
-        <div className="flex gap-4">
+
+        <div className="flex flex-1 flex-col gap-5">
           <Filter
             filters={filters}
             setFilters={setFilters}
-            setFilteredData={setFilteredData}
+            setFilteredData={setFilteredDataWithB200First}
             res={data}
+            totalAvailableGpus={totalAvailableGpus}
+            totalGpus={totalGpus}
+            isLoading={isLoading || false}
+          />
+
+          <div className="h-px w-full bg-defaultBorder md:hidden" />
+          <UnifiedTable />
+        </div>
+      </div>
+
+      {/* Mobile Layout */}
+      <div className="flex flex-col gap-4 px-1 md:px-4 xl:hidden">
+        <div className="flex flex-col gap-6">
+          <HeaderSection />
+          <CtaSection />
+        </div>
+
+        <div className="mt-8 flex flex-wrap gap-2">
+          <Filter
+            filters={filters}
+            setFilters={setFilters}
+            setFilteredData={setFilteredDataWithB200First}
+            res={data}
+            totalAvailableGpus={totalAvailableGpus}
+            totalGpus={totalGpus}
+            isLoading={isLoading || false}
           />
         </div>
-      </div>
-      <div className="flex flex-col gap-1 xl:hidden">
-        <p className="text-sm text-[#7E868C] md:text-base">
-          Total Available GPUs
-        </p>
-        <div className="my-2 flex justify-between">
-          <Card className="px-2 py-1">
-            <span className="font-bold text-[#09090B] dark:text-[#EDEDED]">
-              {totalAvailableGpus || 0}{" "}
-            </span>
-            <span className="text-sm text-[#71717A]">
-              (of {totalGpus || 0})
-            </span>
-          </Card>
-          <div className="flex gap-1">
-            <OFilter
-              filters={filters}
-              setFilters={setFilters}
-              setFilteredData={setFilteredData}
-              res={data}
-            />
-            <Sort
-              setFilteredData={setFilteredData}
-              res={data}
-              filters={filters}
-            />
-          </div>
-        </div>
-      </div>
-      <div
-        className={clsx(
-          "flex w-full flex-col gap-4",
-          subCom ? "lg:hidden" : "md:hidden",
-        )}
-      >
-        {/* //most availability at top */}
 
-        {isLoading
-          ? new Array(10).fill(0).map((_, index) => (
-              <div
-                key={index}
-                className="flex flex-col gap-5  rounded-xl border bg-background2  p-3 shadow-sm"
-              >
-                <div className="flex  items-center gap-3 p-2 ">
-                  <Skeleton className="h-5 w-5" />
-                  <Skeleton className="h-5 w-20" />
-                </div>
-                <div className="h-px w-full bg-defaultBorder"></div>
-                <div className=" flex  flex-col gap-2">
-                  <div className="flex items-center justify-between gap-1">
-                    <Skeleton className="h-5 w-20" />
-                    <Skeleton className="h-5 w-20" />
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <Skeleton className="h-5 w-20" />
-                    <Skeleton className="h-5 w-20" />
-                  </div>
-                  <div className="flex items-center justify-between gap-1">
-                    <Skeleton className="h-5 w-20" />
-                    <Skeleton className="h-5 w-20" />
-                  </div>
-                </div>
-                <div className="h-px w-full bg-defaultBorder"></div>
-                <div className="flex flex-col items-start gap-1 ">
-                  <div className="rounded-x-md relative min-w-[170px]  rounded-md border px-2 py-1 text-sm font-medium md:min-w-[100px] md:text-xs">
-                    <Skeleton className="h-5 w-20" />
-                  </div>
-                  <div className="rounded-x-md relative min-w-[170px]  rounded-md border px-2 py-1 text-sm font-medium md:min-w-[100px] md:text-xs">
-                    <Skeleton className="h-5 w-20" />
-                  </div>
-                </div>
-              </div>
-            ))
-          : filteredData?.map((model, index) => (
-              <Card className="my-2 flex w-full flex-col p-6" key={index}>
-                <div className="flex items-center gap-3 ">
-                  <div className="rounded-md border p-[14px_10px]">
-                    <img
-                      src="/logos/nvidia.png"
-                      alt="nvidia"
-                      className="h-4 w-6"
-                    />
-                  </div>
-                  <div className="">
-                    <p className="text-xl font-semibold capitalize text-foreground">
-                      {modifyModel(model?.model)}
-                    </p>
-                    <p className="text-sm font-medium text-[#71717A] dark:text-[#E4E4EB]">
-                      {model?.ram} {model?.interface}
-                    </p>
-                  </div>
-                </div>
-
-                <AvailabilityBar
-                  available={model?.availability?.available}
-                  total={model?.availability?.total}
-                  className="my-0 border-y py-5"
-                />
-
-                <div className="flex flex-col  justify-center gap-1 border-b pb-6 pt-2">
-                  <div className="flex justify-between border-b pb-1.5 text-lg">
-                    <span className="text-lg font-semibold md:text-base">
-                      Average price:
-                    </span>
-                    <span className="font-semibold">
-                      {price(model?.price?.weightedAverage)}
-                    </span>
-                  </div>
-                  <HoverCard openDelay={2} closeDelay={2}>
-                    <HoverCardTrigger className="flex items-center justify-between pt-1.5">
-                      <div className="flex items-center justify-center gap-1">
-                        <span className="text-sm font-medium text-[#71717A] dark:text-para">
-                          Min: {price(model?.price?.min)}
-                        </span>
-                        <span className="text-sm font-medium text-[#71717A] dark:text-para">
-                          -
-                        </span>
-                        <span className="text-sm font-medium text-[#71717A] dark:text-para">
-                          Max: {price(model?.price?.max)}
-                        </span>
-                      </div>
-                      <Info size={12} className="text-[#71717A]" />
-                    </HoverCardTrigger>
-                    <HoverCardContent align="center">
-                      <div className="flex flex-col">
-                        <div className="flex flex-col px-4 py-3">
-                          <h2 className="text-sm font-medium text-black dark:text-white">
-                            {model?.providerAvailability?.available || 0}{" "}
-                            {model?.providerAvailability?.available > 1
-                              ? "providers"
-                              : "provider"}
-                            <br />
-                            offering this model:
-                          </h2>
-                          <div className="border-1 mt-3 rounded-md bg-[#F1F1F1] px-4 py-3 dark:bg-background ">
-                            <div className="flex items-center  justify-between gap-2 border-b border-[#E4E4E7] pb-2 dark:border-defaultBorder">
-                              <p className="text-4  text-base font-semibold text-foreground">
-                                Avg price:
-                              </p>
-                              <div className="text-base font-bold  ">
-                                {price(model?.price?.weightedAverage)}/hr
-                              </div>
-                            </div>
-                            <div className="mt-2  flex items-center justify-between gap-2">
-                              <div className="flex flex-col items-center justify-center gap-1">
-                                <h3 className="text-sm text-[#71717A] dark:text-para">
-                                  Max:{" "}
-                                  <span>{price(model?.price?.max)}/hr</span>
-                                </h3>
-                              </div>
-                              <div className="">-</div>
-                              <div className="flex flex-col items-center justify-center gap-1">
-                                <h3 className="text-sm text-[#71717A] dark:text-para">
-                                  Min:{" "}
-                                  <span>{price(model?.price?.min)}/hr</span>
-                                </h3>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </HoverCardContent>
-                  </HoverCard>
-                </div>
-                <div className="flex flex-col justify-center pt-6">
-                  <a
-                    id={`${model?.model}-(gpu-rent)`}
-                    href={`https://console.akash.network/rent-gpu?vendor=${model?.vendor}&gpu=${model?.model}&interface=${model?.interface}&vram=${model?.ram}`}
-                    target="_blank"
-                    className="inline-flex justify-center gap-1.5 rounded-md bg-foreground py-3 text-white hover:bg-primary dark:text-black dark:hover:text-inherit"
-                  >
-                    <p className="text-sm font-medium text-inherit">Rent Now</p>
-                    <ArrowUpRightIcon className="w-[15px]" />
-                  </a>
-                </div>
-              </Card>
-            ))}
-      </div>
-
-      <div
-        className={clsx(
-          "hidden w-full overflow-x-auto",
-          subCom ? "lg:block" : "md:block",
-        )}
-      >
-        <table
-          className={clsx(
-            "w-full  border-separate border-spacing-y-1.5 ",
-            subCom ? "" : "",
-          )}
-          cellSpacing={0}
-        >
-          <thead>
-            <tr className="w-full">
-              <th className="w-[26%] px-2 text-left text-sm  font-medium tracking-normal  text-linkText ">
-                Chipset
-              </th>
-              <th className="w-[26%] px-2 text-left text-sm  font-medium tracking-normal text-linkText xl:pl-8">
-                Availability
-              </th>
-              <th className="w-[26%] whitespace-nowrap pr-2 text-left  text-sm font-medium tracking-normal text-linkText xl:pl-8 ">
-                Price (USD per hour)
-              </th>
-              <th className=""></th>
-            </tr>
-          </thead>
-          <tbody className="mt-1">
-            {isLoading
-              ? new Array(10).fill(0).map((_, index) => (
-                  <tr
-                    key={index}
-                    className="overflow-hidden rounded-lg border  bg-background2 shadow-sm"
-                  >
-                    <td className=" w-[24%]  rounded-l-lg border-l p-4 text-base font-semibold xl:text-lg">
-                      <div className="flex items-center gap-3 capitalize">
-                        <Skeleton className="h-5 w-7" />
-                        <div className="">
-                          <Skeleton className="h-7 w-20" />
-                          <Skeleton className="mt-1 h-5 w-20" />
-                        </div>
-                      </div>
-                    </td>
-
-                    <td className=" w-[27.2%] pr-8">
-                      <div className=" flex items-center justify-between">
-                        <Skeleton className="h-5 w-20" />
-                        <Skeleton className="h-5 w-20" />
-                      </div>
-                    </td>
-                    <td className="w-[27.2%] pl-4">
-                      <div className="flex justify-between">
-                        <Skeleton className="h-6 w-20" />
-                        <Skeleton className="h-6 w-20" />
-                      </div>
-                      <div className="flex items-center justify-between pt-1.5">
-                        <Skeleton className="h-5 w-16"></Skeleton>
-                        <Skeleton className="h-5 w-16"></Skeleton>
-                        <Skeleton className="h-3 w-3"></Skeleton>
-                      </div>
-                    </td>
-                    <td className="rounded-r-lg border-r px-8 text-center">
-                      <Skeleton className="mx-auto h-8 w-24" />
-                    </td>
-                  </tr>
-                ))
-              : filteredData?.map((model, index) => (
-                  <tr
-                    key={index}
-                    className="overflow-hidden rounded-lg border-none bg-background2 shadow-sm outline-none"
-                  >
-                    <td className="w-[24%] rounded-l-lg border-y border-l text-base font-semibold xl:text-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="ml-6 rounded-md border p-[11px_5px]">
-                          <img
-                            src="/logos/nvidia.png"
-                            alt="nvidia"
-                            className="h-4 w-6"
-                          />
-                        </div>
-                        <div className="">
-                          <p className="text-xl font-semibold capitalize text-foreground">
-                            {modifyModel(model?.model)}
-                          </p>
-                          <p className="text-sm font-medium text-[#71717A]">
-                            {model?.ram} {model?.interface}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="w-[27.2%] border-y px-2 xl:px-8">
-                      <AvailabilityBar
-                        available={model?.availability?.available}
-                        total={model?.availability?.total}
-                      />
-                    </td>
-                    <td className="w-[27.2%] border-y px-2 xl:px-8">
-                      <div className="flex justify-between border-b pb-1 text-lg">
-                        <span className="font-semibold">Average price:</span>
-                        <span className="font-semibold">
-                          {price(model?.price?.avg)}
-                        </span>
-                      </div>
-                      <HoverCard openDelay={2} closeDelay={2}>
-                        <HoverCardTrigger className="flex items-center justify-between pt-1.5">
-                          <span className="text-sm font-medium text-[#71717A] dark:text-para">
-                            Min: {price(model?.price?.min)}
-                          </span>
-                          <span className="text-sm font-medium text-[#71717A] dark:text-para">
-                            -
-                          </span>
-                          <span className="text-sm font-medium text-[#71717A] dark:text-para">
-                            Max: {price(model?.price?.max)}
-                          </span>
-                          <Info size={12} className="text-[#71717A]" />
-                        </HoverCardTrigger>
-                        <HoverCardContent align="center">
-                          <div className="flex flex-col">
-                            <div className="flex flex-col px-4 py-3">
-                              <h2 className="text-sm font-medium text-black dark:text-white">
-                                {model?.providerAvailability?.available || 0}{" "}
-                                {model?.providerAvailability?.available > 1
-                                  ? "providers"
-                                  : "provider"}
-                                <br />
-                                offering this model:
-                              </h2>
-                              <div className="border-1 mt-3 rounded-md bg-[#F1F1F1] px-4 py-3 dark:bg-background ">
-                                <div className="flex items-center  justify-between gap-2 border-b border-[#E4E4E7] pb-2 dark:border-defaultBorder">
-                                  <p className="text-4  text-base font-semibold text-black dark:text-white">
-                                    Avg price:
-                                  </p>
-                                  <div className="text-base font-bold  ">
-                                    {price(model?.price?.weightedAverage)}/hr
-                                  </div>
-                                </div>
-                                <div className="mt-2  flex items-center justify-between gap-2">
-                                  <div className="flex flex-col items-center justify-center gap-1">
-                                    <h3 className="text-sm text-[#71717A] dark:text-para">
-                                      Max:{" "}
-                                      <span>{price(model?.price?.max)}/hr</span>
-                                    </h3>
-                                  </div>
-                                  <div className="">-</div>
-                                  <div className="flex flex-col items-center justify-center gap-1">
-                                    <h3 className="text-sm text-[#71717A] dark:text-para">
-                                      Min:{" "}
-                                      <span>{price(model?.price?.min)}/hr</span>
-                                    </h3>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </HoverCardContent>
-                      </HoverCard>
-                    </td>
-                    <td className="rounded-r-lg border-y border-r px-2 text-center xl:px-8">
-                      <a
-                        id={`${model?.model}-(gpu-rent)`}
-                        // href={`https://console.akash.network/rent-gpu?vendor=${model?.vendor}&gpu=${model?.model}&interface=${model?.interface}&vram=${model?.ram}`}
-                        href="https://console.akash.network/new-deployment"
-                        target="_blank"
-                        className="inline-flex gap-1.5 rounded-md bg-foreground px-4 py-2 text-white hover:bg-primary dark:text-black dark:hover:text-inherit"
-                      >
-                        <p className="text-sm font-medium text-inherit">
-                          Rent Now
-                        </p>
-                        <ArrowUpRightIcon className="w-[15px]" />
-                      </a>
-                    </td>
-                  </tr>
-                ))}
-          </tbody>
-        </table>
+        <UnifiedTable />
       </div>
     </section>
-  );
-};
-
-const CustomHoverCard = ({ model }: { model: Gpus["models"][0] }) => {
-  return (
-    <div className="flex flex-col items-start gap-1">
-      <div className="rounded-x-md relative min-w-[170px]  rounded-b-md border-x border-b px-2 py-1 text-sm font-medium md:min-w-[100px] md:text-xs">
-        {/* <div className="absolute inset-0 bg-gradient-to-b from-white to-white/20 dark:from-background2 dark:to-background2/20"></div> */}
-        Min: {price(model?.price?.min)}
-      </div>
-      <div className="flex  w-full items-center justify-center gap-2.5   rounded-md bg-black px-2 py-2 dark:bg-[#EDEDED] md:w-auto ">
-        <div className="flex items-center gap-1">
-          <HoverCard openDelay={2} closeDelay={2}>
-            <HoverCardTrigger className="flex cursor-pointer items-center gap-1">
-              <p className="flex items-center">
-                <span className="text-base text-[#D7DBDF] dark:text-[#3E3E3E] md:text-xs">
-                  Avg:
-                </span>
-                <span className="pl-1 text-base font-bold text-white dark:text-black  md:text-xs">
-                  {price(model?.price?.weightedAverage)}
-                </span>
-              </p>
-              <Info size={12} className="text-[#D7DBDF] dark:text-[#3E3E3E]" />
-            </HoverCardTrigger>
-            <HoverCardContent align="center">
-              <div className="flex flex-col">
-                <div className="flex flex-col px-4 py-3">
-                  <h1 className="text-sm font-medium ">
-                    {model?.providerAvailability?.available || 0} providers{" "}
-                    <br />
-                    offering this model
-                  </h1>
-                  <div className="mt-4  flex items-center justify-between gap-2">
-                    <div className="flex flex-col items-center justify-center gap-1">
-                      <h1 className="text-xs text-iconText">Max:</h1>
-                      <div className="text-base font-bold ">
-                        {price(model?.price?.max)}/hr
-                      </div>
-                    </div>
-                    <div className="h-8 w-px border-r "></div>
-                    <div className="flex flex-col items-center justify-center gap-1">
-                      <h1 className="text-xs text-iconText">Min:</h1>
-                      <div className="text-base font-bold ">
-                        {price(model?.price?.min)}/hr
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center  justify-between gap-2 rounded-b-md border-t bg-badgeColor px-4 py-3">
-                  <p className="text-base  text-para">Avg:</p>
-                  <div className="text-base font-bold  ">
-                    {price(model?.price?.weightedAverage)}/hr
-                  </div>
-                </div>
-              </div>
-            </HoverCardContent>
-          </HoverCard>
-        </div>
-        <div className="h-4 w-px  bg-para"></div>
-        <a
-          id={`${model?.model}-(gpu-rent)`}
-          href={`https://console.akash.network/rent-gpu?vendor=${model?.vendor}&gpu=${model?.model}&interface=${model?.interface}&vram=${model?.ram}`}
-          target="_blank"
-          className=" text-base font-medium text-white dark:text-black md:text-xs"
-        >
-          Rent Now
-        </a>
-      </div>
-      <div className=" rounded-x-md relative min-w-[170px]  rounded-t-md border-x border-t px-2 py-1 text-sm font-medium md:min-w-[100px] md:text-xs">
-        Max: {price(model?.price?.max)}
-        {/* <div className="absolute inset-0 bg-gradient-to-t from-white to-white/20 dark:from-background2 dark:to-background2/20"></div> */}
-      </div>
-    </div>
   );
 };

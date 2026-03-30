@@ -64,7 +64,7 @@ One critical advantage of decentralized AI is the increased security and resilie
 
 As AI evolves, decentralized approaches will likely play an increasingly important role in shaping its future development and applications.
 
-In the "Decentralized AI Revealed" panel with David Johnston (OSS Contributor to Morpheus), Teana Baker Taylor (COO, Venice AI), Sam Padilla (Co-founder and head of product at Eidon AI), Cameron Fairchild (Software developer at Bittensor) — the panelists discussed how Decentralized AI enables new kinds of applications that are unique to decentralized networks. They explored how decentralized AI enhances privacy, security, and collaboration among network participants, allowing for the developmemt of new and novel applications.
+In the "Decentralized AI Revealed" panel with David Johnston (OSS Contributor to Morpheus), Teana Baker Taylor (COO, Venice AI), Sam Padilla (Co-founder and head of product at Eidon AI), Cameron Fairchild (Software developer at Bittensor) — the panelists discussed how Decentralized AI enables new kinds of applications that are unique to decentralized networks. They explored how decentralized AI enhances privacy, security, and collaboration among network participants, allowing for the development of new and novel applications.
 
 The panelists also discussed the potential for decentralized AI to make powerful AI tools and resources more widely available, enabling open access for developers and organizations. By leveraging decentralized networks, the future of AI is poised to become more open and transparent — bringing open AI development to a global scale.
 
@@ -133,4 +133,4 @@ Watch the [full recording of Akash Accelerate '24](https://youtu.be/fVYeAVvuNLI?
 
 <iframe width="100%" height="315" src="https://www.youtube.com/embed/fVYeAVvuNLI?si=-oxtTIokJHq_GOUg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
-To connect with [Akash](https://akash.network/), follow the network on [X (Twitter)](https://x.com/akashnet_) and [sign up to hear about the latest announcements and updates](https://akt.fyi/3kpRwVM).
+To connect with [Akash](https://akash.network/), follow the network on [X (Twitter)](https://x.com/akashnet) and [sign up to hear about the latest announcements and updates](https://akt.fyi/3kpRwVM).

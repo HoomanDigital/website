@@ -1,7 +1,6 @@
 import { defineCollection, z } from "astro:content";
 
 const baseSchema = defineCollection({
-  // Type-check frontmatter using a schema
   schema: ({ image }) => {
     return z.object({
       projectImage: image(),
@@ -9,12 +8,14 @@ const baseSchema = defineCollection({
       description: z.string(),
       pubDate: z.coerce.date(),
       tags: z.array(z.string()),
-      ctaButton: z.object({
-        label: z.string(),
-        link: z.string(),
-        enable: z.boolean(),
-      }),
-      category: z.string(),
+      ctaButton: z
+        .object({
+          label: z.string(),
+          link: z.string(),
+          enable: z.boolean(),
+        })
+        .optional(),
+      category: z.union([z.string(), z.array(z.string())]),
       showcase: z.boolean().optional(),
       githubLink: z.string().optional(),
       twitterLink: z.string().optional(),

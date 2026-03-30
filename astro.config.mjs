@@ -4,21 +4,17 @@ import sitemap from "@astrojs/sitemap";
 import tailwind from "@astrojs/tailwind";
 import astroExpressiveCode from "astro-expressive-code";
 import { defineConfig } from "astro/config";
-import remark from "remark-directive";
+import remarkDirective from "remark-directive";
+import remarkMath from "remark-math";
 import { customAsidePlugin } from "./src/lib/aside/customAsidePlugin";
+import { normalizeMath } from "./src/lib/markdown/normalizeMath";
+import { mermaid } from "./src/utils/mermaid";
 import { redirects } from "./src/utils/redirects";
 
-// https://astro.build/config
 export default defineConfig({
-  // experimental: {
-  //   contentCollectionCache: true,
-  // },
   redirects: redirects,
   markdown: {
-    // shikiConfig: {
-    //   theme: theme,
-    // },
-    remarkPlugins: [remark, customAsidePlugin],
+    remarkPlugins: [remarkMath, normalizeMath, remarkDirective, mermaid, customAsidePlugin],
   },
   integrations: [
     tailwind(),
@@ -35,9 +31,13 @@ export default defineConfig({
         terminalTitlebarDotsForeground: "var(--three-dots-bg)",
         terminalTitlebarBackground: "var(--theme-header-bg)",
         terminalTitlebarDotsOpacity: "1",
+        codeFontFamily: "JetBrains Mono",
       },
     }),
     mdx(),
   ],
   site: "https://akash.network",
+  server: {
+    host: true,
+  },
 });

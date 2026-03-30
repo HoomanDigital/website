@@ -16,7 +16,7 @@ contributors:
 bannerImage: ./banner-image.png
 ---
 
-Akash Weekly Spaces is a regular effort hosted via Twitter Spaces to update our community about the ins and outs of Akash Network’s developments. [Follow us on Twitter](https://twitter.com/akashnet_) to be notified when Akash Weekly’s are live.
+Akash Weekly Spaces is a regular effort hosted via Twitter Spaces to update our community about the ins and outs of Akash Network’s developments. [Follow us on Twitter](https://x.com/akashnet) to be notified when Akash Weekly’s are live.
 
 On this Spaces: CEO of Overclock Labs, Greg Osuri, and Anil Murty, the Head of Product at Overclock Labs go over ecosystem updates, product updates, and the Akash adoption plan, phase by phase.
 
@@ -40,7 +40,7 @@ We attribute this uptick to our partnership with the Chia Project, a new blockch
 
 ![](https://www.datocms-assets.com/45776/1657299368-unnamed-4.png)
 
-The Praetor App streamlined provider deployments, and it now includes persistent storage. Persistent storage, as a newer feature on the Akash Network, is still somewhat expensive simply because there aren't enough providers who currently offer it. Praetor is continuing to come up with innovative ways that simplify persistent storage enablement on Akash and we anticipate more and more providers offering this feature in near future. To learn more about Praetor App, click [here](https://youtu.be/M6-8x4WUMjo).
+The Praetor App streamlined provider deployments, and it now includes persistent storage. Persistent storage, as a newer feature on the Akash Network, is still somewhat expensive simply because there aren't enough providers who currently offer it. Praetor is continuing to come up with innovative ways that simplify persistent storage enablement on Akash and we anticipate more and more providers offering this feature in near future. To learn more about Praetor App, click [here](https://youtu.be/M6-8x4WUMjo). [Praetor is now called Akash provider console](https://provider-console.akash.network/)
 
 ![](https://www.datocms-assets.com/45776/1657300118-unnamed-5.png)
 

@@ -15,18 +15,19 @@ const PopOverNavItemNetwork = () => {
       className="relative inline-block text-left"
     >
       <div>
-        <Menu.Button
+        <a
+          href={networkItems[0].link}
+          className="group  inline-flex cursor-pointer items-center justify-center text-sm font-medium leading-normal hover:text-primary xl:text-sm "
           onMouseEnter={() => {
             setOpen(true);
           }}
-          className="inline-flex cursor-pointer items-center justify-center text-sm font-medium leading-normal hover:text-primary xl:text-sm "
         >
           Network
           <ChevronDownIcon
-            className="text-gra -mr-1 ml-1 h-4 w-4"
+            className="text-gra -mr-1 ml-1 h-4 w-4 transition-all group-hover:rotate-180"
             aria-hidden="true"
           />
-        </Menu.Button>
+        </a>
       </div>
 
       <Transition
@@ -39,7 +40,7 @@ const PopOverNavItemNetwork = () => {
         leaveFrom="transform opacity-100 scale-100"
         leaveTo="transform opacity-0 scale-95"
       >
-        <Menu.Items className="absolute left-1/2 z-[35] w-[456px]  origin-top-right translate-x-[-40%]    pt-4  focus:outline-none 2xl:-translate-x-1/2">
+        <Menu.Items className="absolute left-1/2 z-[35] w-[387px]  origin-top-right translate-x-[-40%]    pt-4  focus:outline-none ">
           <div className="flex flex-col overflow-hidden rounded-3xl  border bg-background2  shadow-lg">
             <div className="p-5">
               {networkItems.map((item, i: any) => {
@@ -51,13 +52,13 @@ const PopOverNavItemNetwork = () => {
                         target={
                           item.link.startsWith("http") ? "_blank" : "_self"
                         }
-                        className={`group flex cursor-pointer  items-center gap-6 px-4 py-5 transition-all hover:rounded-lg hover:bg-gray-50 dark:hover:bg-black/10   ${
+                        className={`group flex cursor-pointer  items-center gap-3 p-3 transition-all hover:rounded-lg hover:bg-gray-50 dark:hover:bg-black/10   ${
                           active ? "" : ""
                         } `}
                       >
-                        <div className="rounded-lg bg-background p-2.5 text-para transition-all group-hover:bg-background2 group-hover:text-primary">
+                        <div className="flex size-11 items-center justify-center rounded-lg bg-[#F9FAFB] text-[#4B5563] transition-all group-hover:bg-background2 group-hover:text-primary dark:bg-background dark:text-para">
                           {item.icon ? (
-                            <item.icon size={24} />
+                            <item.icon size={24} strokeWidth={1.5} />
                           ) : (
                             item.customIcon
                           )}
@@ -74,7 +75,7 @@ const PopOverNavItemNetwork = () => {
                               ""
                             )}
                           </p>
-                          <p className="mt-1 text-sm font-normal text-para">
+                          <p className="text-sm font-normal text-para">
                             {item.description}
                           </p>
                         </div>
@@ -96,8 +97,8 @@ const PopOverNavItemNetwork = () => {
                   size={16}
                 />
               </p>
-              <p className="mt-1 text-sm font-normal text-para">
-                Insights into the latest statistics about the Akash Network
+              <p className="mt-1 text-sm font-normal text-textGray">
+                Insights into the latest statistics about the Akash
               </p>
             </a>
           </div>

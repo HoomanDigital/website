@@ -1,7 +1,6 @@
 import { defineCollection, z } from "astro:content";
 
 export const docsHomePage = defineCollection({
-  // Type-check frontmatter using a schema
   schema: ({ image }) => {
     return z.object({
       pageLogo: image(),
@@ -55,6 +54,10 @@ export const docsSchema = defineCollection({
       linkTitle: z.string(),
       description: z.string().optional(),
       categories: z.array(z.string()).optional(),
+      tags: z.array(z.string()).optional(),
+      weight: z.number().optional(),
+      hideTOC: z.boolean().optional(),
+      hideFromNav: z.boolean().optional(),
     });
   },
 });

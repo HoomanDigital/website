@@ -1,7 +1,7 @@
 ---
 title: "Prime Intellect Integrates Permissionless Akash GPUs"
 
-description: Today, high-performance GPUs from the Akash Supecloud, including NVIDIA H100, A100, and more, have been added to the Prime Intellect platform.
+description: Today, high-performance GPUs from the Akash Supercloud, including NVIDIA H100, A100, and more, have been added to the Prime Intellect platform.
 
 pubDate: "2024-07-01"
 draft: false
@@ -22,7 +22,7 @@ contributors:
 bannerImage: ./prime-akash-header.png
 ---
 
-Today, high-performance GPUs from the Akash Supecloud, including NVIDIA H100, A100, and more, have been added to the [Prime Intellect](https://www.primeintellect.ai/) platform. This creates an entirely new way to access GPUs from the Akash Supercloud and allows Akash’s unique permissionless and peer-to-peer marketplace to reach a new cohort of AI developers in need of high-performance GPUs.
+Today, high-performance GPUs from the Akash Supercloud, including NVIDIA H100, A100, and more, have been added to the [Prime Intellect](https://www.primeintellect.ai/) platform. This creates an entirely new way to access GPUs from the Akash Supercloud and allows Akash’s unique permissionless and peer-to-peer marketplace to reach a new cohort of AI developers in need of high-performance GPUs.
 
 [Prime Intellect](https://www.primeintellect.ai/) is on a mission to democratize AI development. By gathering a wide range of the best compute providers on the same platform, it’s now easier than ever for AI developers to find the compute necessary to train, fine-tune, and run inference on AI models. This greatly improves the user experience of accessing compute, and especially permissionless compute from the Akash Supercloud.
 
@@ -43,4 +43,4 @@ By integrating widely across many platforms, Akash can reach new cohorts of user
 
 To start with an Akash GPU deployment via Prime Intellect, head to [primeintellect.ai](http://primeintellect.ai) and look for the Akash logo on the GPU provider selection page of the GPU cluster setup process.
 
-To connect with Akash, follow the network on [X (Twitter)](https://x.com/akashnet_) and [sign up to hear about the latest announcements and updates](https://akt.fyi/3kpRwVM).
+To connect with Akash, follow the network on [X (Twitter)](https://x.com/akashnet) and [sign up to hear about the latest announcements and updates](https://akt.fyi/3kpRwVM).

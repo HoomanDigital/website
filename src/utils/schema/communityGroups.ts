@@ -1,11 +1,10 @@
 import { defineCollection, z } from "astro:content";
 
 export const communityGroupsSchema = defineCollection({
-  // Type-check frontmatter using a schema
   schema: ({ image }) => {
     return z.object({
       title: z.string(),
-      heading: z.string(),
+      heading: z.string().optional(),
       centeredHeader: z.boolean().optional().default(false),
       description: z.string(),
       category: z.string(),

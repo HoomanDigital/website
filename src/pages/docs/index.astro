@@ -2,13 +2,16 @@
 import DocsLayout from "@/layouts/docs-layout.astro";
 import { getCollection, getEntry } from "astro:content";
 
-import MobileNav from "@/components/docs/mobile-sidebar";
-import NextPrevNav from "@/components/docs/next-prev-nav.astro";
-import { findPrevAndNextPages } from "@/lib/docs/findPrevAndNextPages";
-import { generateDocsNav } from "@/lib/docs/generate-nav/docs-nav";
-
 import AlgoliaSearch from "@/components/docs/algolia-search";
-import { proseClasses } from "@/lib/prose-classes";
+import MobileNav from "@/components/docs/mobile-sidebar";
+import {
+  docsSections,
+  gettingStartedCards,
+  helpLinks,
+  icons,
+  type Section,
+} from "@/lib/docs/docs-home-data";
+import { generateDocsNav } from "@/lib/docs/generate-nav/docs-nav";
 
 const pathname = new URL(Astro.request.url).pathname;
 
@@ -16,16 +19,21 @@ const doc = await getEntry("Docs", "index");
 const docsData = await getCollection("Docs");
 const docs = generateDocsNav(docsData);
 
-const { Content } = await doc.render();
+// Default values for the page
+const pageTitle = doc?.data?.title ?? "Akash Documentation";
+const pageDescription =
+  doc?.data?.description ??
+  "Access comprehensive documentation to guide you through using Akash Network. Find detailed instructions, FAQs, and resources for a seamless experience.";
 ---
 
 <DocsLayout
-  title={`${doc.data.title} | Akash Network Documentation - Your Guide to Decentralized Cloud`}
-  description="Access comprehensive documentation to guide you through using Akash Network. Find detailed instructions, FAQs, and resources for a seamless experience."
+  title={`${pageTitle} | Akash Network Documentation - Your Guide to Decentralized Cloud`}
+  description={pageDescription}
   image="/meta-images/docs.png"
 >
+  <!-- Mobile Navigation -->
   <div
-    class="sticky top-0 z-10 -mt-4 mb-10 h-[130px] bg-background pt-4 md:hidden"
+    class="sticky top-0 z-10 mb-10 h-[130px] bg-background px-4 pt-4 md:hidden"
   >
     <div>
       <AlgoliaSearch client:only />
@@ -44,50 +52,149 @@ const { Content } = await doc.render();
       </div>
     </div>
   </div>
-  <div class="flex flex-col items-start">
-    <div
-      class="flex h-[39px] w-[39px] items-center justify-center rounded-lg border bg-background2 md:h-[78px] md:w-[78px]"
-    >
-      <svg
-        width="49"
-        height="42"
-        viewBox="0 0 49 42"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M32.6461 28L40.6323 41.9964H24.5002L16.4297 28H32.6461Z"
-          fill="url(#paint0_linear_2233_35621)"></path>
-        <path
-          d="M40.628 41.9977L48.6852 28.0014L32.5575 0.00195312H16.4297L40.628 41.9977Z"
-          fill="#FF414C"></path>
-        <path
-          d="M8.36851 13.9912H24.4963L8.37522 41.9907L0.304688 27.9943L8.36851 13.9912Z"
-          fill="#FF414C"></path>
-        <defs>
-          <linearGradient
-            id="paint0_linear_2233_35621"
-            x1="24.1078"
-            y1="31.4804"
-            x2="40.5695"
-            y2="42.0771"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop stop-color="#FF414C"></stop>
-            <stop offset="1" stop-color="#FF414C" stop-opacity="0"></stop>
-          </linearGradient>
-        </defs>
-      </svg>
+
+  <div class="relative mb-0 bg-[#292929] px-5 py-16 xl:px-14">
+    <div class="container-reader px-0 md:px-5">
+      <div class="mb-4">
+        <svg
+          width="70"
+          height="61"
+          viewBox="0 0 70 61"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M43.2915 40.4478L55.9186 55.3403L58.2154 60.6704H34.9283L23.2783 40.4478H43.2915Z"
+            fill="#FF414C"></path>
+          <path
+            d="M58.2092 60.6778L69.8399 40.4551L46.5592 0H23.2783L58.2092 60.6778Z"
+            fill="#FF414C"></path>
+          <path
+            d="M11.6403 20.2119H34.9212L11.65 60.667L0 40.4443L11.6403 20.2119Z"
+            fill="#FF414C"></path>
+        </svg>
+      </div>
+
+      <!-- Title -->
+      <h1 class="text-3xl font-bold text-white md:text-4xl lg:text-5xl">
+        {pageTitle}
+      </h1>
+
+      <!-- Description -->
+      <p class="mt-4 max-w-4xl text-base text-[#687076] md:text-lg">
+        {pageDescription}
+      </p>
     </div>
-    <h1 class="mt-6 text-3xl md:mt-10 md:text-4xl lg:text-5xl">
-      {doc.data.title}
-    </h1>
-    <p class="mt-6 text-base md:text-lg">{doc.data.description}</p>
   </div>
 
-  <article class={proseClasses}>
-    <Content />
-  </article>
+  <!-- Search Bar Section -->
+  <!-- <div class="-mt-6 mb-16 flex justify-center px-4">
+    <div class="relative w-full max-w-[642px]">
+      <div
+        class="flex items-center gap-3 rounded-full border border-[#e5e5e5] bg-white px-4 py-3 shadow-sm dark:border-[#333] dark:bg-[#1a1a1a]"
+      >
+        <div class="text-[#737373]" set:html={icons.search} />
+        <input
+          type="text"
+          placeholder="Search Docs (e.g., 'Deploy', 'Provider', 'SDL')..."
+          class="w-full bg-transparent text-sm text-[#737373] placeholder-[#737373] outline-none"
+        />
+      </div>
+    </div>
+  </div> -->
 
-  <NextPrevNav nav={findPrevAndNextPages(docs, pathname)} />
+  <!-- Getting Started Section -->
+  <div class="container-reader px-5">
+    <div class="my-16">
+      <h2 class="mb-4 text-xl font-semibold text-[#11181c] dark:text-white">
+        Getting Started
+      </h2>
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+        {
+          gettingStartedCards.map((card) => (
+            <a
+              href={card.href}
+              class="group  flex flex-col gap-4 overflow-hidden rounded-lg border border-[#e6e8eb] bg-white p-4 transition-all hover:shadow-lg dark:border-[#333] dark:bg-[#1a1a1a]"
+            >
+              <div
+                class={`w-full overflow-hidden rounded-md bg-gray-100 dark:bg-[#222]`}
+                style={`aspect-ratio: 16/9`}
+              >
+                <img
+                  src={card.image}
+                  alt={card.imageAlt}
+                  loading="eager"
+                  class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+              </div>
+              <div>
+                <div class="mb-1 flex items-center gap-2">
+                  <h3 class="text-base font-semibold text-[#11181c] dark:text-white">
+                    {card.title}
+                  </h3>
+                </div>
+                <p class="text-sm text-[#7e868c]">{card.description}</p>
+              </div>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+
+    <!-- Documentation Sections -->
+    {
+      docsSections.map((section: Section) => (
+        <div class="] mb-16 ">
+          <div class="mb-5">
+            <h2 class="text-xl font-semibold text-[#11181c] dark:text-white">
+              {section.title}
+            </h2>
+            <p class="mt-1 text-sm text-[#7e868c]">{section.description}</p>
+          </div>
+          <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+            {section.cards.map((card) => (
+              <a
+                href={card.href}
+                class="group block rounded-xl border  p-4 transition-all  hover:shadow-xl  "
+              >
+                <div class="mb-3 inline-flex rounded-lg bg-background">
+                  <div
+                    set:html={icons[card.icon]}
+                    class="h-5 w-5 text-[#11181c] dark:text-white"
+                  />
+                </div>
+                <h4 class="mb-1 text-sm font-semibold text-[#11181c] dark:text-white">
+                  {card.title}
+                </h4>
+                <p class="text-xs text-[#7e868c]">{card.description}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+      ))
+    }
+
+    <!-- Need Help Section -->
+    <div
+      class="rounded-lg border border-[#e6e8eb] bg-[#f8f9fa] p-8 dark:border-[#333] dark:bg-[#1a1a1a]"
+    >
+      <h2 class="mb-4 text-xl font-semibold text-[#11181c] dark:text-white">
+        Need Help?
+      </h2>
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {
+          helpLinks.map((link) => (
+            <a
+              href={link.href}
+              target={link.external ? "_blank" : undefined}
+              class="flex items-center gap-3 text-[#ff414c] hover:underline"
+            >
+              <Fragment set:html={link.icon} />
+              <span class="font-medium">{link.text}</span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </div>
 </DocsLayout>

@@ -7,7 +7,11 @@ module.exports = {
   theme: {
     extend: {
       screens: {
+        "4xl": "1800px",
         "3xl": "1660px",
+        slg: "1100px",
+        sxl: "1470px",
+        llg: "1154px",
       },
       fontSize: {
         "2xs": ".625rem",
@@ -52,6 +56,10 @@ module.exports = {
           },
         };
       },
+      backgroundImage: {
+        "line-dashed": "url('/images/line-dashed.svg')",
+        "line-dashed-dark": "url('/images/line-dashed-dark.svg')",
+      },
 
       colors: {
         background: "hsl(var(--background))",
@@ -66,6 +74,7 @@ module.exports = {
         lightForeground: "hsl(var(--light-foreground))",
         sortText: "hsl(var(--sort-text))",
         darkGray: "hsl(var(--dark-gray))",
+        darkText: "var(--dark-text)",
         badgeColor: "hsl(var(--badge-color))",
         iconText: "hsl(var(--icon-text))",
         linkText: "hsl(var(--link-text))",
@@ -76,6 +85,9 @@ module.exports = {
         },
         "success-light": "#D1FAE5",
         "success-dark": "#065F46",
+        lightGray: "var(--light-gray)",
+        darkGrayText: "var(--dark-gray-text)",
+        darkGrayBorder: "var(--dark-gray-border)",
 
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -92,6 +104,7 @@ module.exports = {
       fontFamily: {
         sans: ["Inter", ...fontFamily.sans],
         instrument: ["Instrument Serif", ...fontFamily.serif],
+        jetBrainsMono: ["JetBrains Mono", ...fontFamily.mono],
       },
 
       keyframes: {

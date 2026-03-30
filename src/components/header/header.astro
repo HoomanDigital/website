@@ -1,31 +1,45 @@
 ---
 import NavLink from "@/components/header/nav-link.astro";
 import Logo from "@/components/ui/logo.astro";
+import { getYearToUse } from "@/utils/redirects";
 import { getCollection } from "astro:content";
 import clsx from "clsx";
-import DarkModeToggle from "../dark-mode-toggle.astro";
+
+import DarkModeToggle from "../dark-mode-toggle";
+import ButtonLink from "../ui/button-link.astro";
+import TryAkashForm from "../ui/try-akash-form";
 import HamburgerMenu from "./hamburger-menu";
 import { DiscordIcon, GithubIcon, TwitterIcon } from "./icons";
 import PopOverCommunity, { SubNavbar } from "./popovers/popover-nav-community";
 import PopOverNavItemNetwork from "./popovers/popover-nav-item";
 import PopOverNavItemEcosystem from "./popovers/popover-nav-item-ecosystem";
-
 const pathname = `/${Astro.url.pathname.split("/")[1]}`;
 
 interface Props {
   disableSticky?: boolean;
+  hideDarkToggle?: boolean;
+  overrideClassName?: string;
+  hideContainer?: boolean;
+  navClassName?: string;
 }
 
-const { disableSticky } = Astro.props;
+const {
+  disableSticky,
+  hideDarkToggle,
+  overrideClassName,
+  hideContainer,
+  navClassName,
+} = Astro.props;
 
-const visibilty = {
+const visibility = {
   network: ["/about", "/token"],
   community: ["/community"],
-  development: ["/development"],
-  ecosystem: ["/ecosystem"],
+  development: ["/development", "/roadmap"],
+  ecosystem: ["/ecosystem", "/case-studies"],
+  pricing: ["/pricing"],
 };
 
-const pathnames = Object.values(visibilty).flat();
+const pathnames = Object.values(visibility).flat();
 
 const posts = (await getCollection("Blog"))
   .filter((post) => {
@@ -36,22 +50,37 @@ const posts = (await getCollection("Blog"))
     const dateB = new Date(b.data.pubDate);
     return dateB.getTime() - dateA.getTime();
   });
+
+const latestRoadmapYear = getYearToUse();
+
+// Determine header styling based on props and current path
+const isDevPath = visibility.development.includes(pathname);
+const isPathInNavigation = pathnames.includes(pathname);
+const needsBorder = !isDevPath ? "border-b border-defaultBorder" : "";
+const stickyClass =
+  !disableSticky && !isPathInNavigation ? "top-0 sticky z-[30]" : "";
+const headerBaseClass = "bg-white dark:bg-[#242424]";
+
+const headerClass =
+  overrideClassName || clsx(headerBaseClass, needsBorder, stickyClass);
+
+// Navigation container styling
+const navContainerBaseClass = "bg-white dark:bg-[#242424]";
+const navContainerVisibility = disableSticky
+  ? "hidden"
+  : pathnames.includes(pathname)
+    ? "top-0 sticky z-[30]"
+    : "hidden";
+
+// Navigation styling
+const navBaseClass =
+  "mx-auto flex h-[56px] items-center justify-between space-x-2 md:h-[84px]";
+const navContainerClass = hideContainer ? "" : "container";
 ---
 
-<header
-  class={clsx(
-    "bg-white dark:bg-[#242424] border-b border-defaultBorder",
-    disableSticky
-      ? ""
-      : pathnames.includes(pathname)
-        ? ""
-        : "top-0 sticky z-[30]",
-  )}
->
+<header class={headerClass}>
   <nav
-    class={clsx(
-      "container  mx-auto flex h-[56px] items-center justify-between space-x-2 md:h-[84px]",
-    )}
+    class={clsx(navBaseClass, navContainerClass, navClassName)}
     id="page-top"
   >
     <div class="hidden flex-shrink-0 items-center md:flex md:gap-x-6">
@@ -60,22 +89,21 @@ const posts = (await getCollection("Blog"))
       </a>
 
       <div
-        class="mt-1 hidden lg:flex lg:w-full lg:justify-center lg:gap-x-[20px] xl:gap-x-[24px]"
+        class="mt-1 hidden lg:w-full lg:justify-center lg:gap-x-[20px] slg:flex xl:gap-x-[24px]"
       >
         <PopOverNavItemNetwork client:load />
         <PopOverCommunity client:load type="community" />
-        <PopOverCommunity client:load type="development" />
+        <PopOverCommunity
+          client:load
+          type="development"
+          latestRoadmapYear={latestRoadmapYear}
+        />
         <PopOverNavItemEcosystem client:load posts={posts} />
         <NavLink href="/blog/" currentPath={pathname}>Blog</NavLink>
         <NavLink href="/docs/" currentPath={pathname}>Docs</NavLink>
         <NavLink href="/pricing/gpus" currentPath={pathname}>
           <div class="flex items-center gap-1">
-            <span class="text-sm font-medium">Pricing & Earnings</span>
-            <span
-              class="inline-flex items-center rounded-full bg-primary/5 px-1.5 py-0.5 text-xs font-medium text-primary ring-1 ring-inset ring-primary/10"
-            >
-              New GPUs
-            </span>
+            <span class="text-sm font-medium">Pricing</span>
           </div>
         </NavLink>
       </div>
@@ -87,17 +115,20 @@ const posts = (await getCollection("Blog"))
       </a>
     </div>
 
-    <div class="block overflow-hidden lg:hidden">
-      <HamburgerMenu client:load currentPath={pathname} />
+    <div class="block overflow-hidden slg:hidden">
+      <HamburgerMenu
+        client:load
+        currentPath={pathname}
+        latestRoadmapYear={latestRoadmapYear}
+        hideDarkToggle={hideDarkToggle}
+      />
     </div>
 
-    <div class="hidden flex-shrink-0 lg:flex lg:gap-x-[12px]">
-      <DarkModeToggle nav />
-
-      <div class="mr-3 hidden items-center gap-x-[12px] text-para xl:flex">
+    <div class="hidden flex-shrink-0 slg:flex slg:gap-x-5">
+      <div class="hidden items-center gap-x-2 text-para xl:flex">
         <a
           aria-label="Twitter Icon"
-          href="https://twitter.com/akashnet_"
+          href="https://x.com/akashnet"
           target="_blank"
           class="hover:text-primary"
         >
@@ -121,50 +152,47 @@ const posts = (await getCollection("Blog"))
         </a>
       </div>
 
-      <div class="flex items-center lg:gap-x-4">
-        <div>
-          <a
-            aria-label="Deploy Now"
-            target="_blank"
-            id="console-header"
-            href="https://console.akash.network/"
-            class="flex h-full items-center justify-center rounded-[4px] bg-primary px-[10px] py-[7px] text-xs font-medium leading-[16px] text-white hover:bg-darkGray"
-          >
-            Deploy Now
-          </a>
-        </div>
+      <div class="flex items-center gap-2">
+        <ButtonLink
+          link="/gpus-on-demand"
+          variant="secondary"
+          size="sm"
+          className="px-[11px] py-[7px] text-xs"
+        >
+          Get in Touch
+        </ButtonLink>
+
+        <TryAkashForm client:load type="headerDeploy" />
       </div>
+      {!hideDarkToggle && <DarkModeToggle client:load />}
     </div>
   </nav>
 </header>
-<div
-  class={clsx(
-    "bg-white dark:bg-[#242424]",
-    disableSticky
-      ? "hidden"
-      : pathnames.includes(pathname)
-        ? "top-0 sticky z-[30]"
-        : "hidden",
-  )}
->
+
+<div class={clsx(navContainerBaseClass, navContainerVisibility)}>
   {
-    visibilty.network.includes(pathname) && (
+    visibility.network.includes(pathname) && (
       <SubNavbar pathname={Astro.url.pathname} client:load type="network" />
     )
   }
   {
-    visibilty.community.includes(pathname) && (
+    visibility.community.includes(pathname) && (
       <SubNavbar pathname={Astro.url.pathname} client:load type="community" />
     )
   }
   {
-    visibilty.development.includes(pathname) && (
+    visibility.development.includes(pathname) && (
       <SubNavbar pathname={Astro.url.pathname} client:load type="development" />
     )
   }
   {
-    visibilty.ecosystem.includes(pathname) && (
+    visibility.ecosystem.includes(pathname) && (
       <SubNavbar pathname={Astro.url.pathname} client:load type="ecosystem" />
+    )
+  }
+  {
+    visibility.pricing.includes(pathname) && (
+      <SubNavbar pathname={Astro.url.pathname} client:load type="pricing" />
     )
   }
 </div>

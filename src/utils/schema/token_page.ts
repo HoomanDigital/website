@@ -1,28 +1,48 @@
 import { defineCollection, z } from "astro:content";
 
 export const tokenPage = defineCollection({
-  // Type-check frontmatter using a schema
   schema: ({ image }) => {
     return z.object({
       heroSection: z.object({
         title: z.string(),
         description: z.string(),
-        heroImage: z.object({
-          mobile: image(),
-        }),
+        image: z.string(),
+      }),
+
+      buyAktSection: z.object({
+        title: z.string(),
+        description: z.string(),
+        items: z.array(
+          z.object({
+            title: z.string(),
+            link: z.string(),
+            icon: z.string(),
+          }),
+        ),
+      }),
+
+      howItWorksSection: z.object({
+        title: z.string(),
+        cards: z.array(
+          z.object({
+            title: z.string(),
+            description: z.string(),
+            icon: z.string(),
+          }),
+        ),
       }),
 
       ecosystemSection: z.object({
         title: z.string(),
         description: z.string(),
-
-        table: z.array(
+        categories: z.array(
           z.object({
-            row: z.array(
+            title: z.string(),
+            items: z.array(
               z.object({
                 title: z.string(),
-
-                link: z.string().optional(),
+                link: z.string(),
+                icon: z.string(),
               }),
             ),
           }),
@@ -32,14 +52,14 @@ export const tokenPage = defineCollection({
       buyingAKTSection: z.object({
         title: z.string(),
         description: z.string(),
-
-        table: z.array(
+        categories: z.array(
           z.object({
-            row: z.array(
+            title: z.string(),
+            items: z.array(
               z.object({
                 title: z.string(),
-
-                link: z.string().optional(),
+                link: z.string(),
+                icon: z.string(),
               }),
             ),
           }),
@@ -49,19 +69,6 @@ export const tokenPage = defineCollection({
       aktFeaturesSection: z.object({
         title: z.string(),
         description: z.string(),
-        image: image(),
-        darkImage: image().optional(),
-      }),
-
-      howItWorksSection: z.object({
-        title: z.string(),
-        cards: z.array(
-          z.object({
-            title: z.string(),
-            description: z.string(),
-            icon: image(),
-          }),
-        ),
       }),
 
       faqsSection: z.object({

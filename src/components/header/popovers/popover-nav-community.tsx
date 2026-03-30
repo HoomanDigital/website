@@ -1,6 +1,8 @@
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment, useState } from "react";
 
+import { CalendarModal } from "@/components/development-pages/calendar-modal";
+import { getYearToUse } from "@/utils/redirects";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import clsx from "clsx";
 import { ArrowRightCircle } from "lucide-react";
@@ -9,9 +11,16 @@ import {
   developmentItems,
   ecosystemNavItems,
   networkItems,
+  pricingItems,
 } from "./links";
 
-const PopOverSmall = ({ type }: { type: "community" | "development" }) => {
+const PopOverSmall = ({
+  type,
+  latestRoadmapYear,
+}: {
+  type: "community" | "development";
+  latestRoadmapYear?: number;
+}) => {
   const items = type === "community" ? communityItems : developmentItems;
   const external = items.find((item) => item.external);
   const [open2, setOpen] = useState(false);
@@ -22,20 +31,23 @@ const PopOverSmall = ({ type }: { type: "community" | "development" }) => {
       className="relative inline-block text-left"
       onMouseLeave={() => setOpen(false)}
     >
-      <div>
-        <Menu.Button
-          onMouseEnter={() => {
-            setOpen(true);
-          }}
-          className="inline-flex cursor-pointer items-center justify-center text-sm font-medium capitalize leading-normal hover:text-primary xl:text-sm "
-        >
-          {type}
-          <ChevronDownIcon
-            className="text-gra -mr-1 ml-1 h-4 w-4"
-            aria-hidden="true"
-          />
-        </Menu.Button>
-      </div>
+      <a
+        href={
+          type === "community"
+            ? communityItems[0].link
+            : developmentItems[0].link
+        }
+        onMouseEnter={() => {
+          setOpen(true);
+        }}
+        className="group inline-flex cursor-pointer items-center justify-center text-sm font-medium capitalize leading-normal hover:text-primary xl:text-sm "
+      >
+        {type}
+        <ChevronDownIcon
+          className="text-gra -mr-1 ml-1 h-4 w-4 transition-all group-hover:rotate-180"
+          aria-hidden="true"
+        />
+      </a>
 
       <Transition
         show={open2}
@@ -57,13 +69,15 @@ const PopOverSmall = ({ type }: { type: "community" | "development" }) => {
                     <Menu.Item key={i}>
                       {({ active }) => (
                         <a
-                          href={item.link}
+                          href={
+                            item.link === "roadmap"
+                              ? `/roadmap/${latestRoadmapYear}`
+                              : item.link
+                          }
                           target={
                             item.link.startsWith("http") ? "_blank" : "_self"
                           }
-                          className={`dark:hover:bg- group flex  cursor-pointer items-center gap-6 rounded-lg px-4 py-3 transition-all hover:bg-gray-50 dark:hover:bg-black/10    ${
-                            active ? "" : ""
-                          } `}
+                          className="dark:hover:bg- group flex  cursor-pointer items-center gap-6 rounded-lg px-4 py-3 transition-all hover:bg-gray-50 dark:hover:bg-black/10"
                         >
                           <div className="text-[#9CA3AF] transition-all group-hover:text-primary dark:text-para">
                             {item.icon ? (
@@ -93,7 +107,7 @@ const PopOverSmall = ({ type }: { type: "community" | "development" }) => {
             </div>
             <a
               href={external?.link}
-              target="_blank"
+              target={external?.link.startsWith("http") ? "_blank" : "_self"}
               className="border-t bg-gray-50 px-7 py-3 font-semibold transition-all hover:bg-gray-100 dark:bg-background hover:dark:bg-darkGray"
             >
               <p className="inline-flex items-center text-sm font-semibold text-foreground ">
@@ -121,7 +135,7 @@ export const SubNavbar = ({
   type,
 }: {
   pathname: string;
-  type: "community" | "development" | "network" | "ecosystem";
+  type: "community" | "development" | "network" | "ecosystem" | "pricing";
 }) => {
   const items =
     type === "community"
@@ -130,25 +144,35 @@ export const SubNavbar = ({
         ? developmentItems
         : type === "ecosystem"
           ? ecosystemNavItems
-          : networkItems.map((item) => ({ ...item, external: false }));
+          : type === "pricing"
+            ? pricingItems
+            : networkItems.map((item) => ({ ...item, external: false }));
 
-  const external = items.find((item) => item?.external);
+  const external = items.find((item) => item?.external && !item?.internal);
   return (
     <div className=" border-y">
       <div className="container flex items-center gap-2 overflow-x-auto  md:justify-between">
         <div className="flex">
           {items
-            .filter((item) => !item?.external)
+            .filter((item) => !item?.external && !item?.internal)
             .map((item, i) => {
               return (
                 <a
                   key={i}
-                  href={item.link}
+                  href={
+                    item.link === "roadmap"
+                      ? `/roadmap/${getYearToUse()}`
+                      : item.link
+                  }
                   target={item.link.startsWith("http") ? "_blank" : "_self"}
                   className={clsx(
                     "flex cursor-pointer items-center gap-2  border-b-2   p-4 text-para    ",
                     pathname === item.link ||
-                      pathname?.split("/")[2] === item.link?.split("/")[2]
+                      (item.link === "roadmap" &&
+                        pathname?.split("/")[1] === "roadmap") ||
+                      pathname?.split("/")[2] === item.link?.split("/")[2] ||
+                      (pathname?.split("/")[1] === item.link?.split("/")[1] &&
+                        pathname.includes("case-studies"))
                       ? " border-foreground "
                       : "border-transparent",
                   )}
@@ -165,18 +189,44 @@ export const SubNavbar = ({
               );
             })}
         </div>
-        {external && (
-          <a
-            href={external.link}
-            target="_blank"
-            className=" flex items-center whitespace-nowrap rounded-full  border bg-background px-3 py-1.5 text-sm font-semibold  "
-          >
-            {external.title}
-            <ArrowRightCircle
-              className="ml-1 inline-block -rotate-45 stroke-[1.5px]"
-              size={16}
-            />
-          </a>
+        {type === "development" ? (
+          <CalendarModal />
+        ) : (
+          (() => {
+            const internal = items.find((item) => item?.internal);
+            return (
+              <>
+                {internal && (
+                  <a
+                    href={internal.link}
+                    target={
+                      internal.link.startsWith("http") ? "_blank" : "_self"
+                    }
+                    className=" flex items-center whitespace-nowrap rounded-full  border bg-background px-3 py-1.5 text-sm font-semibold  "
+                  >
+                    {internal.title}
+                    <ArrowRightCircle
+                      className="ml-1 inline-block stroke-[1.5px]"
+                      size={16}
+                    />
+                  </a>
+                )}
+                {external && (
+                  <a
+                    href={external.link}
+                    target="_blank"
+                    className=" flex items-center whitespace-nowrap rounded-full  border bg-background px-3 py-1.5 text-sm font-semibold  "
+                  >
+                    {external.title}
+                    <ArrowRightCircle
+                      className="ml-1 inline-block -rotate-45 stroke-[1.5px]"
+                      size={16}
+                    />
+                  </a>
+                )}
+              </>
+            );
+          })()
         )}
       </div>
     </div>

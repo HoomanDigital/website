@@ -16,7 +16,7 @@ contributors:
 bannerImage: ./banner-image.png
 ---
 
-Akash Weekly is a regular effort hosted via Twitter Spaces to update our community about the ins and outs of Akash Network’s developments. [Follow us on Twitter](https://twitter.com/akashnet_) to be notified when Akash Weekly's are live.
+Akash Weekly is a regular effort hosted via Twitter Spaces to update our community about the ins and outs of Akash Network’s developments. [Follow us on Twitter](https://x.com/akashnet) to be notified when Akash Weekly's are live.
 
 On this Spaces: CEO of Overclock Labs, Greg Osuri, and Alani Kuye, Program Manager of Overclock Labs speak with Akash Providers to discuss general ecosystem updates, and share some of our providers’ experiences using Akash Network.
 
@@ -36,7 +36,7 @@ On this Spaces: CEO of Overclock Labs, Greg Osuri, and Alani Kuye, Program Manag
 
 ![](https://www.datocms-assets.com/45776/1658528393-unnamed-3.png)
 
-- **Praetor App launched its Akash Providers' map.** Praetor launched a new feature that allows users of the Praetor app to check the provider dashboard, and discover providers on a map of the entire world that uses Akash. Currently, Akash has 50 providers across the globe. Click [here](https://akash.praetorapp.com/provider-status) to see for yourself.
+- **Praetor App launched its Akash Providers' map.** Praetor launched a new feature that allows users of the Praetor app to check the provider dashboard, and discover providers on a map of the entire world that uses Akash. Praetor App is now called Akash Provider Console. Currently, Akash has 50 providers across the globe. Click [here](https://console.akash.network/providers) to see for yourself.
 
 ![](https://www.datocms-assets.com/45776/1658528480-unnamed-4.png)
 
